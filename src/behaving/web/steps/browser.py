@@ -2,8 +2,8 @@ import os
 import time
 
 from behave import step
-from splinter.browser import Browser
 from selenium.common.exceptions import WebDriverException
+from splinter.browser import Browser
 
 
 @step(u"{brand} as the default browser")
@@ -77,14 +77,17 @@ def named_browser(context, name):
 
         else:
             browser_attempts = 0
+            last_err = None
             while browser_attempts < context.max_browser_attempts:
                 try:
                     context.browsers[name] = Browser(**args)
                     break
-                except WebDriverException:
+                except WebDriverException as err:
                     browser_attempts += 1
+                    last_err = err
             else:
-                raise WebDriverException("Failed to initialize browser")
+                raise WebDriverException(
+                    "Failed to initialize browser: %s" % last_err)
             if context.default_browser_size:
                 context.browsers[name].driver.set_window_size(
                     *context.default_browser_size
@@ -151,7 +154,8 @@ def clear_session_storage(context):
 
 @step(u"I clear the browser storage")
 def clear_browser_storage(context):
-    context.browser.execute_script("localStorage.clear();sessionStorage.clear();")
+    context.browser.execute_script(
+        "localStorage.clear();sessionStorage.clear();")
 
 
 @step(u"I resize the browser to {width}x{height}")
@@ -167,8 +171,10 @@ def resize_viewport(context, width, height):
     b_size = context.browser.driver.get_window_size()
     b_width = b_size["width"]
     b_height = b_size["height"]
-    v_width = context.browser.evaluate_script("document.documentElement.clientWidth")
-    v_height = context.browser.evaluate_script("document.documentElement.clientHeight")
+    v_width = context.browser.evaluate_script(
+        "document.documentElement.clientWidth")
+    v_height = context.browser.evaluate_script(
+        "document.documentElement.clientHeight")
 
     context.browser.driver.set_window_size(
         b_width + width - v_width, b_height + height - v_height

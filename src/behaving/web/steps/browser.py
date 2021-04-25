@@ -16,7 +16,7 @@ def given_some_browser(context, brand):
 def given_a_browser(context):
     if getattr(context, "headless", None):
         context.browser_args["headless"] = True
-    else:
+    elif getattr(context, "headless", None) is False:
         context.browser_args["headless"] = False
 
     named_browser(context, "")
@@ -26,7 +26,7 @@ def given_a_browser(context):
 def named_browser(context, name):
     if getattr(context, "headless", None):
         context.browser_args["headless"] = True
-    else:
+    elif getattr(context, "headless", None) is False:
         context.browser_args["headless"] = False
 
     single_browser = hasattr(context, "single_browser")

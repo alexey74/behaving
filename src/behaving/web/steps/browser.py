@@ -1,7 +1,7 @@
+from behave import step
 import os
 import time
 
-from behave import step
 from selenium.common.exceptions import WebDriverException
 from splinter.browser import Browser
 
@@ -87,6 +87,7 @@ def named_browser(context, name):
                     last_err = err
             else:
                 if last_err:
+                    import traceback
                     traceback.print_tb(last_err.__traceback__)
                 raise WebDriverException(
                     "Failed to initialize browser: %s" % last_err)

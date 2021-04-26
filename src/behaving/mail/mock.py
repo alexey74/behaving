@@ -1,10 +1,11 @@
+import argparse
+import asyncore
+import logging
 import os
 import smtpd
 import sys
 import time
-import argparse
-import logging
-import asyncore
+
 
 try:
     from pync import Notifier
@@ -41,7 +42,8 @@ class DebuggingServer(smtpd.DebuggingServer):
         self, peer, mailfrom, rcpttos, data, mail_options=[], rcpt_options=[]
     ):
         if self.log_to_stdout:
-            smtpd.DebuggingServer.process_message(self, peer, mailfrom, rcpttos, data)
+            smtpd.DebuggingServer.process_message(
+                self, peer, mailfrom, rcpttos, data)
             sys.stdout.flush()
         if self.path is None:
             return
@@ -51,10 +53,13 @@ class DebuggingServer(smtpd.DebuggingServer):
                 os.makedirs(path)
             dest = getUniqueFilename(path, "eml")
             with open(dest, "wb") as f:
+                if type(data) == type(''):
+                    data = data.decode('utf-8')
                 f.write(data)
 
         if notifier:
-            notifier.notify(data, title=rcpttos, execute="open -a TextEdit " + dest)
+            notifier.notify(data, title=rcpttos,
+                            execute="open -a TextEdit " + dest)
 
 
 def main(args=sys.argv[1:]):
@@ -90,7 +95,8 @@ def main(args=sys.argv[1:]):
     global output_dir
     output_dir = options.output_dir
 
-    smtpd = DebuggingServer(("0.0.0.0", int(options.port)), None, options.log_to_stdout)
+    smtpd = DebuggingServer(("0.0.0.0", int(options.port)),
+                            None, options.log_to_stdout)
     try:
         asyncore.loop()
     except KeyboardInterrupt:

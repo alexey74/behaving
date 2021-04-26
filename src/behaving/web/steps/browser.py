@@ -86,6 +86,8 @@ def named_browser(context, name):
                     browser_attempts += 1
                     last_err = err
             else:
+                if last_err:
+                    traceback.print_tb(last_err.__traceback__)
                 raise WebDriverException(
                     "Failed to initialize browser: %s" % last_err)
             if context.default_browser_size:

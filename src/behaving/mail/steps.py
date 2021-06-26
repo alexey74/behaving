@@ -26,7 +26,12 @@ URL_RE = re.compile(
 def should_receive_email_containing_text(context, address, text):
     def filter_contents(mail):
         mail = email.message_from_string(mail)
-        return text in mail.get_payload(decode=True).decode("utf-8")
+        payload = mail.get_payload(decode=True)
+        if payload:
+            payload = payload.decode("utf-8")
+            return text in payload
+        else:
+            return False
 
     assert context.mail.user_messages(
         address, filter_contents

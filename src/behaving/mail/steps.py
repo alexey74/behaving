@@ -28,7 +28,7 @@ def should_receive_email_containing_text(context, address, text):
     def filter_contents(mail):
         mail = email.message_from_string(mail)
         if mail.is_multipart():
-            msgs = [mail.get_payload()]
+            msgs = mail.get_payload()
         else:
             msgs = [mail]
         for msg in msgs:

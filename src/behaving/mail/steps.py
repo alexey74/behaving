@@ -1,17 +1,18 @@
 import email
+from email.header import Header
 from email.header import decode_header, make_header
 from email.mime.base import MIMEBase
-from email.header import Header
-import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import re
+from email.mime.text import MIMEText
 import os.path
+import re
+import smtplib
 from subprocess import check_output
 
 from behave import step
-from behaving.personas.persona import persona_vars
 from behaving.mobile.steps import get_android_emulator_id_from_name
+from behaving.personas.persona import persona_vars
+
 
 MAIL_TIMEOUT = 5
 URL_RE = re.compile(
@@ -26,12 +27,17 @@ URL_RE = re.compile(
 def should_receive_email_containing_text(context, address, text):
     def filter_contents(mail):
         mail = email.message_from_string(mail)
-        payload = mail.get_payload(decode=True)
-        if payload:
-            payload = payload.decode("utf-8")
-            return text in payload
+        if mail.is_multipart():
+            msgs = [mail.get_payload()]
         else:
-            return False
+            msgs = [mail]
+        for msg in msgs:
+            payload = msg.get_payload(decode=True)
+            if payload:
+                payload = payload.decode("utf-8")
+                if text in payload:
+                    return True
+        return False
 
     assert context.mail.user_messages(
         address, filter_contents

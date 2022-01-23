@@ -66,8 +66,11 @@ def should_receive_email_with_attachment(context, address, filename):
         if len(mail.get_payload()) > 1:
             attachments = mail.get_payload()
             for attachment in attachments:
-                if filename == attachment.get_filename():
-                    return True
+                try:
+                    if filename == attachment.get_filename():
+                        return True
+                except AttributeError:
+                    pass
             return False
 
     assert context.mail.user_messages(address, filter_contents), u"message not found"

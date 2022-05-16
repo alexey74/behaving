@@ -1,6 +1,6 @@
 import mimetypes
 
-from selenium.webdriver import Firefox
+from selenium.webdriver import DesiredCapabilities, Firefox
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from splinter.driver.webdriver import (
@@ -10,6 +10,7 @@ from splinter.driver.webdriver import (
 from splinter.driver.webdriver.cookie_manager import CookieManager
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from splinter.browser import _DRIVERS
 
 _DOWNLOAD_PATH = "/tmp"
 _ALL_MIME_TYPES = ",".join(mimetypes.types_map.values())
@@ -29,6 +30,7 @@ class WebDriver(BaseWebDriver):
         options=None,
         headless=False,
         wait_time=2,
+        desired_capabilities=None,
     ):
 
         firefox_profile = FirefoxProfile(profile)
@@ -65,7 +67,14 @@ class WebDriver(BaseWebDriver):
             # noinspection PyDeprecation
             options.set_headless()
 
-        self.driver = Firefox(firefox_profile, firefox_options=options)
+        firefox_capabilities = DesiredCapabilities().FIREFOX.copy()
+        firefox_capabilities["marionette"] = True
+        if desired_capabilities:
+            firefox_capabilities.update(desired_capabilities)
+
+        self.driver = Firefox(
+            firefox_profile, capabilities=firefox_capabilities, firefox_options=options
+        )
 
         if fullscreen:
             ActionChains(self.driver).send_keys(Keys.F11).perform()
@@ -76,7 +85,5 @@ class WebDriver(BaseWebDriver):
 
         super(WebDriver, self).__init__(wait_time)
 
-
-from splinter.browser import _DRIVERS
 
 _DRIVERS["firefox"] = WebDriver

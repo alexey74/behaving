@@ -1,9 +1,35 @@
-
 Changelog
 =========
 
-2.0.1 - 
+3.0.3 - 2022-04-29
 ------------------
+
+- Support assertions on cell values in tables.
+  [ggozad]
+
+3.0.2 - 2022-04-21
+------------------
+
+- Steps to support HTML tables
+  [ggozad]
+
+3.0.1 - 2021-12-02
+------------------
+
+- Option to accept self-signed certs.
+  [ggozad]
+
+3.0.0 - 2021-11-23
+------------------
+
+- VSCode devcontainer & docker integration.
+  [oyvinev]
+
+- Remove obsolete python infra such as buildout and friends. Make a simple poetry setup
+  and provide docker image.
+
+- Dump mobile. Appium never really worked, never really will.
+  [ggozad]
 
 - Fix lots of py3 errors.
   [ggozad]

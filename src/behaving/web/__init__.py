@@ -1,14 +1,11 @@
 import os
 import tempfile
-
-try:
-    from urllib2 import URLError
-except ImportError:
-    from urllib.error import URLError
+from urllib.error import URLError
 
 from behaving.web import electron
 from behaving.web import chrome
 from behaving.web import firefox
+
 
 # Generic setup/teardown for compatibility with pytest et al.
 def setup(context):
@@ -16,8 +13,6 @@ def setup(context):
         context.default_browser = ""
     if not hasattr(context, "browser_args"):
         context.browser_args = {}
-    if not hasattr(context, "remote_webdriver"):
-        context.remote_webdriver = False
     if not hasattr(context, "attachment_dir"):
         context.attachment_dir = "/"
     if not hasattr(context, "base_url"):
@@ -34,6 +29,8 @@ def setup(context):
                 context.screenshots_dir = ""
     else:
         context.screenshots_dir = ""
+    if not hasattr(context, "remote_webdriver_url"):
+        context.remote_webdriver_url = ""
 
     # Setup download path
     if not hasattr(context, "download_dir"):
@@ -41,6 +38,8 @@ def setup(context):
         chrome._DOWNLOAD_PATH = context.download_dir
         firefox._DOWNLOAD_PATH = context.download_dir
 
+    if not hasattr(context, "accept_ssl_certs"):
+        context.accept_ssl_certs = False
     context.browsers = {}
 
 

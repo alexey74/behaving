@@ -35,46 +35,26 @@ def named_browser(context, name):
         return
     if name not in context.browsers:
         args = context.browser_args.copy()
-        if context.remote_webdriver:
+        if context.accept_ssl_certs:
+            args["desired_capabilities"] = {"acceptInsecureCerts": True}
+        if context.remote_webdriver_url:
             args["driver_name"] = "remote"
+            del args["headless"]
             if context.default_browser:
                 args["browser"] = context.default_browser
+                args["command_executor"] = context.remote_webdriver_url
         elif context.default_browser:
             args["driver_name"] = context.default_browser
         if context.default_browser == "electron":
             assert context.electron_app, u"You need to set the electron app path"
             args["binary"] = context.electron_app
-        if context.default_browser == "ios":
-            caps = {}
-            assert context.ios_app, u"You need to specify the iOS app"
+        browser_attempts = 0
+        while browser_attempts < context.max_browser_attempts:
             try:
-                caps = context.ios_capabilities
-            except AttributeError:
-                pass
-            try:
-                caps.update(context.personas[name]["ios_capabilities"])
-            except KeyError:
-                pass
-            app_path = context.ios_app
-            args["app_path"] = app_path
-            args["caps"] = caps
-            context.browsers[name] = Browser(**args)
-        elif context.default_browser == "android":
-            caps = {}
-            assert context.android_app, u"You need to specify the android app"
-            try:
-                caps = context.android_capabilities
-            except AttributeError:
-                pass
-            try:
-                caps.update(context.personas[name]["android_capabilities"])
-            except KeyError:
-                pass
-            app_path = context.android_app
-            args["app_path"] = app_path
-            args["caps"] = caps
-            context.browsers[name] = Browser(**args)
-
+                context.browsers[name] = Browser(**args)
+                break
+            except WebDriverException:
+                browser_attempts += 1
         else:
             browser_attempts = 0
             last_err = None

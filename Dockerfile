@@ -1,42 +1,34 @@
-FROM debian:jessie
-MAINTAINER Yiorgis Gozadinos
+FROM python:3.7.12-buster
+# ARG VERSION=99.0.0
 
-RUN apt-get update
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LC_ALL=C.UTF-8 LANG=C.UTF-8
 
-# Install nodejs repositories
-RUN curl -sL https://deb.nodesource.com/setup_4.x | bash -
+# Do not write .pyc files
+ENV PYTHONDONTWRITEBYTECODE 1
+# Do not ever buffer console output
+ENV PYTHONUNBUFFERED 1
 
-# Install python, node & dependencies
-RUN apt-get -y install python-dev python2.7-dev python-pip nodejs
+RUN pip install poetry
+RUN pip install supervisor
 
-# Install utils
-RUN apt-get -y install wget unzip xvfb
+COPY poetry.lock pyproject.toml README.md /app/
+COPY src /app/src/
+COPY supervisord.conf /app
+RUN mkdir /app/var && mkdir /app/var/log && mkdir /app/var/mail && mkdir /app/var/sms && mkdir /app/var/gcm
 
-# Install Chrome, chromedriver
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-RUN apt-get update
-RUN apt-get -y install google-chrome-stable
-WORKDIR /usr/local/bin
-RUN wget http://chromedriver.storage.googleapis.com/2.21/chromedriver_linux64.zip
-RUN unzip chromedriver_linux64.zip
-RUN rm chromedriver_linux64.zip
-RUN chmod a+rx chromedriver
+WORKDIR /app
+RUN poetry config virtualenvs.create false
+RUN poetry install
 
-# Install firefox
-RUN sh -c 'echo "deb http://packages.linuxmint.com debian import" >> /etc/apt/sources.list.d/firefox.list'
-RUN gpg --keyserver pgpkeys.mit.edu --recv-key 3EE67F3D0FF405B2
-RUN gpg -a --export 3EE67F3D0FF405B2 | apt-key add -
-RUN apt-get update
-RUN apt-get -y install firefox
+RUN useradd -ms /bin/bash behaving
 
-WORKDIR /root
-COPY . behaving
-COPY templates/docker-run.sh /root/docker-run.sh
-RUN chmod +x /root/docker-run.sh
-RUN cd behaving && \
-    python bootstrap.py && \
-    ./bin/buildout
+RUN chown -R behaving /app
 
-ENTRYPOINT ["sh", "/root/docker-run.sh"]
-CMD ["tests/features"]
+USER behaving
+
+# Just wait forever
+# ENTRYPOINT ["tail"]
+# CMD ["sleep", "infinity"]
+
+ENTRYPOINT [ "supervisord" ]

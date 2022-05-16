@@ -5,6 +5,10 @@ from behaving import environment as benv
 def before_all(context):
     import behaving
 
+    context.remote_webdriver_url = "http://selenium-hub:4444"
+    context.default_browser = "firefox"
+    context.accept_ssl_certs = True
+
     context.attachment_dir = os.path.join(
         os.path.dirname(behaving.__file__), "../../tests/data"
     )
@@ -19,9 +23,6 @@ def before_all(context):
     )
     context.screenshots_dir = os.path.join(
         os.path.dirname(behaving.__file__), "../../var/screenshots/"
-    )
-    context.mobile_app_dir = os.path.join(
-        os.path.dirname(behaving.__file__), "../../tests/rntest/"
     )
     benv.before_all(context)
 
